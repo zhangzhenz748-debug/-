@@ -87,31 +87,31 @@
 - `EnemyManager`：敌人对象池
 
 ## 战斗流程
-玩家回合
-├─ TurnManager.OnPlayerTrun()
-│ ├─ CallDeal() → CardManager 发牌
-│ ├─ 开启"回合结束"按钮
-│ └─ Energy.InitEnergy()
-├─ 玩家拖拽卡牌到敌人
-│ ├─ Energy.ConsumEnergy()
-│ ├─ CallExecute(player, enemy, ID) → BattleManager.Battle()
-│ │ ├─ 查 Card_SO 取 CardData
-│ │ ├─ 设置 VfxPlayer 动画
-│ │ └─ Function.Functions(Caster, Target)
-│ └─ CallRecycleCard() → 进弃牌堆
-└─ 点击"回合结束" → CallEnemyTurn()
+- 玩家回合
+- ├─ TurnManager.OnPlayerTrun()
+- │ ├─ CallDeal() → CardManager 发牌
+- │ ├─ 开启"回合结束"按钮
+- │ └─ Energy.InitEnergy()
+- ├─ 玩家拖拽卡牌到敌人
+- │ ├─ Energy.ConsumEnergy()
+- │ ├─ CallExecute(player, enemy, ID) → BattleManager.Battle()
+- │ │ ├─ 查 Card_SO 取 CardData
+- │ │ ├─ 设置 VfxPlayer 动画
+- │ │ └─ Function.Functions(Caster, Target)
+- │ └─ CallRecycleCard() → 进弃牌堆
+- └─ 点击"回合结束" → CallEnemyTurn()
 
-敌人回合
-├─ TurnManager.OnEnemyTurn()
-│ ├─ 关闭回合结束按钮
-│ ├─ CallRecycleAllCard()
-│ └─ CallEnemyAttack() → EnemyManager.AllEnemyAttack()
-│ └─ 逐个敌人播放攻击动画 → EnemyLogic → CallExecute()
-└─ 敌人全部攻击完 → 回到玩家回合
+- 敌人回合
+- ├─ TurnManager.OnEnemyTurn()
+- │ ├─ 关闭回合结束按钮
+- │ ├─ CallRecycleAllCard()
+- | └─ CallEnemyAttack() → EnemyManager.AllEnemyAttack()
+- │ └─ 逐个敌人播放攻击动画 → EnemyLogic → CallExecute()
+- └─ 敌人全部攻击完 → 回到玩家回合
 
-敌人全部死亡
-└─ EnemyManager.CheckWin() → CallWin() → ResultPanel 显示胜利 + 三选一卡牌
-└─ 点击卡牌 → CallCardID() → CardManager 加入牌库
-└─ 点击下一关 → CallNextLevel() → LevelManager.LevelSpawn()
+- 敌人全部死亡
+- └─ EnemyManager.CheckWin() → CallWin() → ResultPanel 显示胜利 + 三选一卡牌
+- └─ 点击卡牌 → CallCardID() → CardManager 加入牌库
+- └─ 点击下一关 → CallNextLevel() → LevelManager.LevelSpawn()
 ├── SceneSwitch.cs # 场景切换触发
 └── SceneSwitchSystem.cs # 场景切换执行（跨场景常驻）
