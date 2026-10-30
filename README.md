@@ -9,13 +9,13 @@
 - TextMeshPro / UGUI
 
 ## 目录结构
-Assets/Scripts/
-├── BattleManager.cs # 战斗执行入口：根据卡牌ID调用对应功能
-├── Button.cs # UI 按钮事件（开/关面板、回合结束、下一关、重开、退出）
-├── DamageTextUI.cs # 伤害数字飘字（DOTween 位移+缩放）
-├── Energy.cs # 能量系统（单例，消耗/初始化/不足提示）
-├── EventHandler.cs # 全局静态事件总线
-├── Health.cs # 血量、血条、受伤闪烁、死亡处理
+- Assets/Scripts/
+- ├── BattleManager.cs # 战斗执行入口：根据卡牌ID调用对应功能
+- ├── Button.cs # UI 按钮事件（开/关面板、回合结束、下一关、重开、退出）
+- ├── DamageTextUI.cs # 伤害数字飘字（DOTween 位移+缩放）
+- ├── Energy.cs # 能量系统（单例，消耗/初始化/不足提示）
+- ├── EventHandler.cs # 全局静态事件总线
+- ├── Health.cs # 血量、血条、受伤闪烁、死亡处理
 ├── TextUI.cs # 卡牌描述文本显示/隐藏
 ├── TurnManager.cs # 回合控制器（玩家回合/敌人回合流转）
 ├── VfxPlayer.cs # 技能特效播放（AnimatorOverrideController 切换）
