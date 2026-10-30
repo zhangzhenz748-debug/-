@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3473800ebfda65945b959ef471c3f173, type: 3}
+  m_Name: Card_SO
+  m_EditorClassIdentifier: 
+  cardDates:
+  - sprite: {fileID: 874536800, guid: a54816325eee87c41a2fa29adf50790d, type: 3}
+    ID: 1
+    date: 10
+    animator: {fileID: 22100000, guid: 65cdce8c677388a4fb6dd43963e8e677, type: 2}
+    energy: 1
+    name: "\u666E\u901A\u5361\u724C"
+    Description: "\u653B\u51FB\u654C\u4EBA\u4E00\u6B21\u9020\u621010\u70B9\u4F24\u5BB3"
+    function: {fileID: 11400000, guid: f855edd98110c464b84f190d9eddf406, type: 2}
+  - sprite: {fileID: -2031302199, guid: a54816325eee87c41a2fa29adf50790d, type: 3}
+    ID: 2
+    date: 20
+    animator: {fileID: 22100000, guid: 64131c64e40acad47b39dc2e0a637f8b, type: 2}
+    energy: 2
+    name: "\u666E\u901A\u5361\u724C"
+    Description: "\u653B\u51FB\u654C\u4EBA\u4E00\u6B21\u9020\u621020\u70B9\u4F24\u5BB3"
+    function: {fileID: 11400000, guid: f855edd98110c464b84f190d9eddf406, type: 2}
+  - sprite: {fileID: 198459073, guid: a54816325eee87c41a2fa29adf50790d, type: 3}
+    ID: 3
+    date: 12
+    animator: {fileID: 22100000, guid: f1b72d5b19114d24182d4110701ef5d1, type: 2}
+    energy: 1
+    name: "\u666E\u901A\u5361\u724C"
+    Description: "\u6062\u590D12\u70B9\u8840"
+    function: {fileID: 11400000, guid: 0e147de78447d924ab3e175ae7f83b91, type: 2}
+  - sprite: {fileID: -631467111, guid: a54816325eee87c41a2fa29adf50790d, type: 3}
+    ID: 4
+    date: 15
+    animator: {fileID: 22100000, guid: 65cdce8c677388a4fb6dd43963e8e677, type: 2}
+    energy: 1
+    name: "\u666E\u901A\u5361\u724C"
+    Description: "\u653B\u51FB\u654C\u4EBA\u4E00\u6B21\u9020\u621015\u70B9\u4F24\u5BB3"
+    function: {fileID: 11400000, guid: f855edd98110c464b84f190d9eddf406, type: 2}
+  - sprite: {fileID: 1683741688, guid: a54816325eee87c41a2fa29adf50790d, type: 3}
+    ID: 5
+    date: 16
+    animator: {fileID: 22100000, guid: 65cdce8c677388a4fb6dd43963e8e677, type: 2}
+    energy: 2
+    name: "\u666E\u901A\u5361\u724C"
+    Description: "\u5BF9\u654C\u4EBA\u9020\u621016\u70B9\u4F24\u5BB3\uFF0C\u5E76\u6062\u590D\u4E00\u534A\u8840\u91CF"
+    function: {fileID: 11400000, guid: a0144ce23e2fb8046a2a2268f3a7425b, type: 2}
+  - sprite: {fileID: 1218943807, guid: a54816325eee87c41a2fa29adf50790d, type: 3}
+    ID: 6
+    date: 17
+    animator: {fileID: 22100000, guid: 65cdce8c677388a4fb6dd43963e8e677, type: 2}
+    energy: 2
+    name: "\u666E\u901A\u5361\u724C"
+    Description: "\u653B\u51FB\u654C\u4EBA\u4E00\u6B21\u9020\u621017\u70B9\u4F24\u5BB3"
+    function: {fileID: 11400000, guid: f855edd98110c464b84f190d9eddf406, type: 2}

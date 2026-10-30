@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 456b406a56835dd4fa9dbd2f637375eb, type: 3}
+  m_Name: Enemy_SO
+  m_EditorClassIdentifier: 
+  enemyDates:
+  - name: "\u5927\u50BB"
+    ID: 1
+    sprite: {fileID: -1319199481, guid: b3d161edeafce42408afae55921ca0cb, type: 3}
+    MaxHealth: 80
+    animator: {fileID: 22100000, guid: 78290bb97b11f7640a59aae865e4331f, type: 2}
+    AttackLogic: {fileID: 11400000, guid: 54da73a8eb253964bac371f829a039b3, type: 2}
+    skills:
+    - ID: 1
+      sprite: {fileID: 1794830602, guid: a54816325eee87c41a2fa29adf50790d, type: 3}
+    - ID: 1
+      sprite: {fileID: 831261133, guid: a54816325eee87c41a2fa29adf50790d, type: 3}
+    - ID: 1
+      sprite: {fileID: 858666208, guid: a54816325eee87c41a2fa29adf50790d, type: 3}
+    Minion: 1
+    Elite: 0
+    Boos: 0
+  - name: "\u725B\u5934\u4EBA1"
+    ID: 2
+    sprite: {fileID: 889989192, guid: 582bd957245ed6c4fb66405706c2c655, type: 3}
+    MaxHealth: 180
+    animator: {fileID: 22100000, guid: d70f36698bd5002429b51785c2497fad, type: 2}
+    AttackLogic: {fileID: 11400000, guid: a56cadc8d38f001459c65d88e3e2fc23, type: 2}
+    skills:
+    - ID: 1
+      sprite: {fileID: 21300000, guid: e655ee3b51a36d54ba945d2bda638c8d, type: 3}
+    - ID: 4
+      sprite: {fileID: -964591260, guid: a54816325eee87c41a2fa29adf50790d, type: 3}
+    - ID: 5
+      sprite: {fileID: 822530382, guid: a54816325eee87c41a2fa29adf50790d, type: 3}
+    Minion: 0
+    Elite: 1
+    Boos: 0
+  - name: "\u725B\u5934\u4EBA2"
+    ID: 3
+    sprite: {fileID: -887085187, guid: c3b6b2870d9d326419cf77a96ec280e7, type: 3}
+    MaxHealth: 120
+    animator: {fileID: 22100000, guid: 2f80afb1db8275d4ea051f8b0f27ee09, type: 2}
+    AttackLogic: {fileID: 11400000, guid: a56cadc8d38f001459c65d88e3e2fc23, type: 2}
+    skills:
+    - ID: 4
+      sprite: {fileID: 1794830602, guid: a54816325eee87c41a2fa29adf50790d, type: 3}
+    - ID: 5
+      sprite: {fileID: 21300000, guid: e655ee3b51a36d54ba945d2bda638c8d, type: 3}
+    - ID: 6
+      sprite: {fileID: 21300000, guid: 4b8894f07db56e84eb916ccc9ec6e4d4, type: 3}
+    Minion: 0
+    Elite: 0
+    Boos: 1

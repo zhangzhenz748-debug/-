@@ -1,0 +1,1803 @@
+﻿
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\BattleManager.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+public class BattleManager : MonoBehaviour//战斗管理器
+{
+    public Card_SO card_SO;
+    void OnEnable()
+    {
+        EventHandler.Execute += Battle;
+    }
+    void OnDisable()
+    {
+        EventHandler.Execute -= Battle;
+    }
+    public void Battle(GameObject Caster,GameObject Target, int ID)
+    {
+        if (Target == null)
+            return;
+        //传入目标和功能函数
+        //检测自身状态
+        //执行卡牌功能
+        CardData Date = card_SO.cardDates.FirstOrDefault(i => i.ID == ID);
+        if (Date != null)
+        {
+            Date.function.value = Date.date;
+            //对特效进行赋值
+            Caster.GetComponent<VfxPlayer>().SetVfxAnimator(Date.animator);
+            Target.GetComponent<VfxPlayer>().SetVfxAnimator(Date.animator);
+            //再到卡牌功能类里启动
+            Date.function.Functions(Caster,Target);
+        }
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Button.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Button : MonoBehaviour
+{
+    public GameObject game;
+    public void Open()
+    {
+        game.SetActive(true);
+    }
+    public void Close()
+    {
+        game.SetActive(false);
+    }
+    public void OpenAudio()
+    {
+        EventHandler.CallSetAudio();
+    }
+    public void EnemyTurn()
+    {
+        //修改为敌人
+        EventHandler.CallEnemyTurn();
+    }
+    public void NextLevel()//到下一关
+    {
+        EventHandler.CallRecycleAllCard();
+        EventHandler.CallNextLevel();
+    }
+    public void RestartGame()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene(
+            UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+    }
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\DamageTextUI.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using DG.Tweening;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class DamageTextUI : MonoBehaviour
+{
+    public Text text;//显示的伤害数字
+    public float Speed;//速度
+    private float time = 1f;
+    void OnEnable()
+    {
+        EventHandler.DamageText += SetPos;
+    }
+    void OnDisable()
+    {
+        EventHandler.DamageText -= SetPos;
+    }
+    private void SetPos(Transform rect, int data)
+    {
+        transform.position = rect.position;
+        transform.localScale = Vector3.one;
+        text.text = data.ToString();
+        text.enabled = true;
+        StartCoroutine(Mov());
+    }
+    //进行回收
+    //使用协程进行移动
+    IEnumerator Mov()
+    {
+        Color c = text.color;
+        transform.DOMove(new Vector3(transform.position.x, transform.position.y + 40, 0), 1);
+        transform.DOScale(new Vector3(1.5f, 1.5f, 0), 1);
+        yield return new WaitForSeconds(1f);
+        text.enabled = false;
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Energy.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+public class Energy : MonoBehaviour
+{
+    public int CurrEnergy;//当前能量
+    public int MaxEnergy;//能量上限
+    public Text text;//能量UI
+    public GameObject game;
+    public static Energy instance;//单例模式
+    void Awake()
+    {
+        if (instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        else
+        {
+            instance = this;
+        }
+        InitEnergy();
+    }
+    void SetEnergy()
+    {
+        text.text = CurrEnergy.ToString();
+    }
+    public void InitEnergy()
+    {
+        text.text = MaxEnergy.ToString();
+        CurrEnergy = MaxEnergy;
+    }
+    public bool ConsumEnergy(int data)
+    {
+        if (CurrEnergy - data < 0)
+        {
+            StartCoroutine(NotEnergy());
+            return false;
+        }
+        CurrEnergy -= data;
+        SetEnergy();
+        return true;
+    }
+    IEnumerator NotEnergy()
+    {
+        game.SetActive(true);
+        yield return new WaitForSeconds(0.2f);
+        game.SetActive(false);
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\EventHandler.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System;
+
+public static class EventHandler
+{
+    public static event Action CardPositionUpdate;//修改卡牌位置
+    public static void CallCardPositionUpdate()
+    {
+        CardPositionUpdate?.Invoke();
+    }
+    public static event Action<GameObject, int> RecycleCard;//回收单个卡牌
+    public static void CallRecycleCard(GameObject obj, int ID)
+    {
+        RecycleCard?.Invoke(obj, ID);
+    }
+    public static event Action RecycleAllCard;//回收所有卡牌
+    public static void CallRecycleAllCard()
+    {
+        RecycleAllCard?.Invoke();
+    }
+    public static event Action<float, float, float> Audio;//修改声音
+    public static void CallAudio(float master, float bgm, float sfx)
+    {
+        Audio?.Invoke(master, bgm, sfx);
+    }
+    public static event Action Audiosfx;//播放音效
+    public static void CallAudiosfx()
+    {
+        Audiosfx?.Invoke();
+    }
+    public static event Action SetAudio;//修改声音
+    public static void CallSetAudio()
+    {
+        SetAudio?.Invoke();
+    }
+    public static event Action Deal;//发牌
+    public static void CallDeal()
+    {
+        Deal?.Invoke();
+    }
+    public static event Action PlayerTrun;//玩家回合
+    public static void CallPlayerTrun()
+    {
+        PlayerTrun?.Invoke();
+    }
+    public static event Action EnemyTurn;//敌人回合
+    public static void CallEnemyTurn()
+    {
+        EnemyTurn?.Invoke();
+    }
+    public static event Action<GameObject, GameObject, int> Execute;//执行攻击
+    /// <summary>
+    /// 执行攻击
+    /// </summary>
+    /// <param name="Caster">发起者</param>
+    /// <param name="Target">目标</param>
+    /// <param name="ID">卡牌编号</param>
+    public static void CallExecute(GameObject Caster, GameObject Target, int ID)
+    {
+        Execute?.Invoke(Caster, Target, ID);
+    }
+    public static event Action EnemyAttack;//敌人攻击
+    public static void CallEnemyAttack()
+    {
+        EnemyAttack?.Invoke();
+    }
+    public static event Action<string> Show;//显示卡牌描述
+    public static void CallShow(string Description)
+    {
+        Show?.Invoke(Description);
+    }
+    public static event Action Hide;//关闭卡牌描述
+    public static void CallHide()
+    {
+        Hide?.Invoke();
+    }
+    public static event Action<GameObject> EnemyDeath;//怪物死亡
+    public static void CallEnemyDeath(GameObject game)
+    {
+        EnemyDeath?.Invoke(game);
+    }
+    public static event Action<int> EnemySpaw;//敌人生成
+    public static void CallEnemySpaw(int ID)
+    {
+        EnemySpaw?.Invoke(ID);
+    }
+    public static event Action<Sprite> EnemyIntent;//敌人意图
+    public static void CallEnemyIntent(Sprite ID)
+    {
+        EnemyIntent?.Invoke(ID);
+    }
+    public static event Action Win;//胜利
+    public static event Action Lose;//失败
+    public static void CallWin()
+    {
+        Win?.Invoke();
+    }
+    public static void CallLose()
+    {
+        Lose?.Invoke();
+    }
+    public static event Action NextLevel;//开启下一关
+    public static void CallNextLevel()
+    {
+        NextLevel?.Invoke();
+    }
+    public static event Action<Transform, int> DamageText;//伤害数值显示
+    public static void CallDamageText(Transform rect, int data)
+    {
+        DamageText?.Invoke(rect, data);
+    }
+    public static event Action CloseCardResult;//关闭卡牌选择
+    public static void CallCloseCardResult()
+    {
+        CloseCardResult?.Invoke();
+    }
+    public static event Action<int> CardID;//选择卡牌传输卡牌数据
+    public static void CallCardID(int ID)
+    {
+        CardID?.Invoke(ID);
+    }
+    public static event Action<string> Scene;
+    public static void CallScene(string name)
+    {
+        Scene?.Invoke(name);
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Health.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+public class Health : MonoBehaviour
+{
+    public float MaxHealth;//最大生命值
+    public float CurrHealth;//当前生命值
+    public Slider slider;
+    public Text text;//血量显示
+    private Animator animator;
+    private Image image;//图片
+    void Awake()
+    {
+        image=GetComponent<Image>();
+        animator = GetComponent<Animator>();
+        StartHealth(MaxHealth);
+    }
+    public void StartHealth(float health)
+    {
+        MaxHealth = CurrHealth = health;
+        text.text = CurrHealth.ToString() + "/" + MaxHealth.ToString();
+        slider.value = 1;
+    }
+    public void SetCurrHealth(float data)
+    {
+        if(CurrHealth+data>=MaxHealth)
+        {
+            CurrHealth=MaxHealth;
+        }
+        else
+        {
+            CurrHealth+=data;
+        }
+    }
+    public void SetMaxHealth(float data)
+    {
+        MaxHealth+=data;
+    }
+    public void SetHealth()
+    {
+        text.text = CurrHealth.ToString() + "/" + MaxHealth.ToString();
+        if( slider.value > CurrHealth / MaxHealth)
+        {
+            StartCoroutine(IHurt());
+        }
+        slider.value = CurrHealth / MaxHealth;
+        
+    }
+    IEnumerator IHurt()//受伤
+    {
+        if (gameObject.tag == "NPC")
+        {
+            EnemyManager.instance.EnemyDeath = false;
+            Debug.Log("怪物受伤1");
+        }
+        animator.SetTrigger("受伤");
+        yield return null;
+        Color c=image.color;
+        
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        yield return new WaitForSeconds(stateInfo.length/5);
+        c=Color.red;
+        image.color=c;
+        yield return new WaitForSeconds(stateInfo.length/5);
+        c=Color.white;
+        image.color=c;
+        yield return new WaitForSeconds(stateInfo.length/5);
+        c=Color.red;
+        image.color=c;
+        yield return new WaitForSeconds(stateInfo.length/5);
+        c=Color.white;
+        image.color=c;
+        yield return new WaitForSeconds(stateInfo.length/5);
+        if (CurrHealth <= 0)
+        {
+            StartCoroutine(IDeath());
+        }
+        else
+        {
+            if (gameObject.tag == "NPC")
+            {
+                EnemyManager.instance.EnemyDeath = true;
+                Debug.Log("怪物受伤2");
+            }
+        }
+        c=Color.white;
+        image.color=c;
+    }
+    IEnumerator IDeath()//死亡
+    {
+        animator.SetTrigger("死亡");
+        //通知怪物管理器回收
+        if (gameObject.tag == "NPC")
+        {
+            EnemyManager.instance.EnemyDeath = false;
+            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+            yield return new WaitForSeconds(stateInfo.length + 0.5f);
+            EventHandler.CallEnemyDeath(gameObject);
+        }
+        else
+        {
+            //玩家死亡
+            EventHandler.CallLose();
+            Debug.Log("玩家死亡，游戏结算");
+            //EventHandler.CallLose();
+        }
+        Debug.Log("死亡");
+        yield return null;
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\TextUI.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class TextUI : MonoBehaviour
+{
+    public Image image;
+    public Text text;
+    public void OnShow(string Description)
+    {
+        image.enabled=true;
+        text.gameObject.SetActive(true);
+        text.text=Description;
+    }
+    public void OnHide()
+    {
+        image.enabled=false;
+        text.gameObject.SetActive(false);
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\TurnManager.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+public enum TurnState
+{
+    PlayerTurn,//玩家回合
+    EnemyTurn//敌人回合
+}
+public class TurnManager : MonoBehaviour//回合控制器
+{
+    public GameObject game;
+    void OnEnable()
+    {
+        EventHandler.PlayerTrun+=OnPlayerTrun;
+        EventHandler.EnemyTurn+=OnEnemyTurn;
+    }
+    void OnDisable()
+    {
+        EventHandler.PlayerTrun-=OnPlayerTrun;
+        EventHandler.EnemyTurn-=OnEnemyTurn;
+    }
+    public void OnPlayerTrun()//玩家回合
+    {
+        //发牌
+        EventHandler.CallDeal();
+        //开启回合结束
+        game.SetActive(true);
+        Energy.instance.InitEnergy();
+        //执行一些玩家操作
+    }
+    public void OnEnemyTurn()//敌人回合
+    {
+        //关闭回合结束
+        game.SetActive(false);
+        //回收玩家的卡牌
+        EventHandler.CallRecycleAllCard();
+        //敌人攻击
+        //通知敌人攻击
+        EventHandler.CallEnemyAttack();
+        StartCoroutine(EnemyTurn());
+        Debug.Log("敌人回合");
+    }
+    private IEnumerator EnemyTurn()
+    {
+        yield return new WaitUntil(()=>EnemyManager.instance.PlayerTrun);//等待敌人攻击完成
+        EnemyManager.instance .PlayerTrun=false;
+        Debug.Log("敌人攻击");
+        //进入玩家回合
+        OnPlayerTrun();
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\VfxPlayer.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class VfxPlayer : MonoBehaviour
+{
+    public Animator Vfxanimator;//特效动画
+    public Image image;
+    private AnimatorOverrideController animatorController;
+    public void SetVfxAnimator(AnimatorOverrideController controller)
+    {
+        Vfxanimator.runtimeAnimatorController = controller;
+    }
+    public void OnPlayerAnimator()
+    {
+        StartCoroutine(PlayerAnimator());
+    }
+    IEnumerator PlayerAnimator()
+    {
+        image.enabled = true;
+        Vfxanimator.Play("VFXBase");
+        AnimatorStateInfo stateInfo = Vfxanimator.GetCurrentAnimatorStateInfo(0);
+        yield return new WaitForSeconds(stateInfo.length);
+        image.enabled = false;
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Audio\AudioController.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Audio;
+
+public class AudioController : MonoBehaviour//音频控制器
+{
+    public AudioData audioData;
+    public AudioSource bgmSource;//音频
+    public AudioSource sfxSource;
+    void OnEnable()
+    {
+        EventHandler.Audio += OnAudio;
+        EventHandler.Audiosfx += OnPlayersfx;
+    }
+    void OnDisable()
+    {
+        EventHandler.Audio -= OnAudio;
+        EventHandler.Audiosfx -= OnPlayersfx;
+    }
+    void Awake()
+    {
+        OnAudio(0, audioData.bgmSource, audioData.sfxSource);
+        DontDestroyOnLoad(gameObject);
+    }
+    private void OnAudio(float master, float bgm, float sfx)
+    {
+        if (master == 1f)
+        {
+            bgmSource.volume = bgm;
+            audioData.bgmSource = bgm;
+
+        }
+        else
+        {
+            sfxSource.volume = sfx;
+            audioData.sfxSource = sfx;
+        }
+
+    }
+    void OnPlayersfx()
+    {
+        sfxSource.Play();
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Audio\AudioData.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+[CreateAssetMenu(fileName = "AudioData", menuName = "InvenTory/AudioData")]
+[System.Serializable]
+public class AudioData : ScriptableObject
+{
+    public float bgmSource;
+    public float sfxSource;
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Audio\AudioUI.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+public class AudioUI : MonoBehaviour//UI
+{
+    public AudioData audioData;
+    // public Slider master;
+    public Slider bgm;
+    public Slider sfx;
+    void SetAudio1(float i)
+    {
+        EventHandler.CallAudio(1f, bgm.value, sfx.value);
+    }
+    void SetAudio2(float i)
+    {
+        EventHandler.CallAudio(0, bgm.value, sfx.value);
+    }
+    void Awake()
+    {
+        bgm.onValueChanged.AddListener(SetAudio1);
+        sfx.onValueChanged.AddListener(SetAudio2);
+    }
+    void OnEnable()
+    {
+        EventHandler.SetAudio += SetSlider;
+    }
+    void OnDisable()
+    {
+        EventHandler.SetAudio -= SetSlider;
+    }
+    void SetSlider()
+    {
+        bgm.value = audioData.bgmSource;
+        sfx.value = audioData.sfxSource;
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Card\Card.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using DG.Tweening;
+
+public class Card : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
+{
+    public int ID;//卡牌ID
+    public GameObject player;//玩家
+    public int energy;
+    private Vector3 pos;
+    private CanvasGroup canvasGroup;
+    private Image image;//卡牌图片
+    public string Description;//卡牌描述
+    private TextUI textUI;//卡牌描述
+    private Intent intent;//卡牌描述显示的位置
+    private int index;//位置
+    private Vector3 Angle;
+    void Awake()
+    {
+        intent = GetComponent<Intent>();
+        image = GetComponent<Image>();
+        canvasGroup = GetComponent<CanvasGroup>();
+        textUI = GetComponent<TextUI>();
+    }
+    public void SetImage(Sprite sprite)
+    {
+        image.sprite = sprite;
+    }
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        pos = (Vector3)eventData.position - transform.position;
+        transform.localScale = new Vector3(1.2f, 1.2f, 0);
+        canvasGroup.blocksRaycasts = false;
+        transform.DORotate(Vector3.zero, 0.5f);
+    }
+    public void OnDrag(PointerEventData eventData)
+    {
+        transform.position = Input.mousePosition - pos;
+        transform.DORotate(Vector3.zero, 0.5f);
+    }
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        GameObject obj = eventData.pointerCurrentRaycast.gameObject;
+        if (obj == null)
+        {
+            EventHandler.CallCardPositionUpdate();
+            canvasGroup.blocksRaycasts = true;
+            return;
+        }
+        if (obj.tag == "NPC")
+        {
+            if (Energy.instance.ConsumEnergy(energy))
+            {
+                //执行卡牌功能
+                Debug.Log("执行卡牌");
+                //检测卡牌是否能执行
+                EventHandler.CallExecute(player, obj, ID);
+                //执行完卡牌将数据给到弃牌组
+                EventHandler.CallRecycleCard(gameObject, ID);
+                //播放玩家攻击动画
+                //播放音效
+                EventHandler.CallAudiosfx();
+            }
+            else
+            {
+                Debug.Log("没能量了");
+            }
+        }
+        else
+        {
+            //回到原位置
+            Debug.Log("回到原位置");
+            //通知
+        }
+        transform.DORotate(Angle, 0.5f);
+        transform.localScale = new Vector3(1f, 1f, 0);
+        EventHandler.CallCardPositionUpdate();
+        Debug.Log(obj.tag);
+        canvasGroup.blocksRaycasts = true;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        transform.localScale = new Vector3(1.2f, 1.2f, 0);
+        index = transform.GetSiblingIndex();
+        transform.SetAsLastSibling();
+        intent.SetDistance();
+        textUI.OnShow(Description);
+        Angle = transform.localEulerAngles;
+        transform.DORotate(Vector3.zero, 0.5f);
+        //transform.position = new Vector3();
+        //使用计时器
+        //通知显示卡牌效果文字
+        //EventHandler.CallShow(Description);
+    }
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        transform.localScale = new Vector3(1f, 1f, 0);
+        transform.SetSiblingIndex(index);
+        textUI.OnHide();
+        transform.DORotate(Angle, 0.5f);
+        //关闭卡牌效果文字
+        //EventHandler.CallHide();
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Card\CardDate.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+[System.Serializable]
+public class CardData
+{
+    [Header("卡牌图片")] public Sprite sprite;//卡牌图片
+    [Header("卡牌ID")] public int ID;
+    [Header("卡牌数值")] public int date;//卡牌数值 多少回合启动/打多少伤害/回复多少血量
+    [Header("特效动画")] public AnimatorOverrideController animator;
+    [Header("消耗多少能量")] public int energy;//消耗多少能量
+    [Header("卡牌名称")] public string name;//卡牌名称
+    [Header("卡牌描述")] public string Description;//卡牌描述
+    [SerializeReference]
+    [Header("卡牌功能")] public Function function;
+
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Card\CardManager.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Pool;
+using System.Linq;
+using DG.Tweening;
+public class CardManager : MonoBehaviour
+{
+    [Header("卡牌预制体")] public GameObject Prefabe;//卡牌预制体
+    [Header("最大卡牌数量")] public int MaxCard;//最大卡牌数量
+    [Header("每次发牌数量")] public int DrawCount;
+    [Header("玩家")] public GameObject player;
+    [Header("扇形布局")]
+    //距离圆心距离
+    public float W = 300f;                 // 半宽，按你手牌区调
+    public float thetaDeg = 30f;
+    public float CAngle;//每张牌的固定角度
+    public Card_SO card_SO;//卡牌SO文件 用于存储所有卡牌数据 
+    //当前手牌
+    public List<int> Hand;
+    private IObjectPool<GameObject> CardPool;//对象池
+    //发牌组
+    private List<int> DrawPile;
+    //弃牌组
+    private List<int> DiscardPile;
+
+    private float width;
+    private float height;
+    private RectTransform rect;
+    void Awake()
+    {
+        //初始化List
+        DrawPile = new List<int>();
+        DiscardPile = new List<int>();
+        //初始化对象池
+        CardPool = new ObjectPool<GameObject>(createFunc: CreatePooledItem,
+            actionOnGet: OnTakeFromPool,
+            actionOnRelease: OnReturnedToPool,
+            actionOnDestroy: OnDestroyPoolObject);
+        //获取预制体宽高
+        RectTransform rt = Prefabe.GetComponent<RectTransform>();
+        width = rt.rect.width;
+        height = rt.rect.height;
+        rect = GetComponent<RectTransform>();
+    }
+    void Start()
+    {
+        DrawPile.AddRange(Hand);//第一次将所有手牌加到发牌组
+                                // StartDeal();
+    }
+    void OnEnable()
+    {
+        EventHandler.CardPositionUpdate += UpdateHandLayout;
+        EventHandler.RecycleCard += OnRecycleCard;
+        EventHandler.Deal += StartDeal;
+        EventHandler.RecycleAllCard += OnRecycleAllCard;
+        EventHandler.CardID += OnCardID;
+    }
+    void OnDisable()
+    {
+        EventHandler.CardPositionUpdate -= UpdateHandLayout;
+        EventHandler.RecycleCard -= OnRecycleCard;
+        EventHandler.Deal -= StartDeal;
+        EventHandler.RecycleAllCard -= OnRecycleAllCard;
+        EventHandler.CardID -= OnCardID;
+    }
+
+    private void OnCardID(int ID)
+    {
+        //将新加入的卡牌加入发牌组，同时更新手牌
+        DrawPile.Add(ID);
+        Hand.Add(ID);
+    }
+
+    private void StartDeal()//开始发牌
+    {
+        StartCoroutine(Deal());
+    }
+    /// <summary>
+    /// 回收卡牌
+    /// </summary>
+    /// <param name="obj">回收的物体</param>
+    /// <param name="ID">回收的ID</param>
+    private void OnRecycleCard(GameObject obj, int ID)
+    {
+        DiscardPile.Add(ID);
+        CardPool.Release(obj);
+        //UpdateHandLayout();
+    }
+    #region 对象池
+    // 1. 当池中没有对象时，如何创建新对象
+    private GameObject CreatePooledItem()
+    {
+        GameObject obj = Instantiate(Prefabe, transform);
+        obj.transform.position=Vector3.zero;
+        return obj;
+    }
+    // 2. 从池中获取对象时调用
+    private void OnTakeFromPool(GameObject obj)
+    {
+        obj.SetActive(true);
+    }
+    // 3. 将对象归还给池时调用
+    private void OnReturnedToPool(GameObject obj)
+    {
+        obj.transform.position=Vector3.zero;
+        obj.SetActive(false);
+    }
+    // 4. 当池满销毁多余对象时调用
+    private void OnDestroyPoolObject(GameObject obj)
+    {
+        Destroy(obj);
+    }
+    #endregion
+    #region 修改卡牌位置
+    private List<Card> cards = new List<Card>();//自身所有的子物体卡牌
+    private void GetChildrenCard()
+    {
+        cards.Clear();
+        foreach (Transform child in transform)
+        {
+            if (child.gameObject.activeSelf)
+            {
+                cards.Add(child.GetComponent<Card>());
+            }
+        }
+    }
+    //使用算法计算卡牌的位置
+    public void UpdateHandLayout()
+    {
+        GetChildrenCard();
+        int count = cards.Count;
+        if (count == 0) return;
+        float thetaRad = thetaDeg * Mathf.Deg2Rad;
+        float R = W / Mathf.Sin(thetaRad);
+        //每一步角度
+        float Angle = (thetaDeg - (-thetaDeg)) / (count - 1);
+        float CardAngle = -thetaDeg;
+        float rand = CardAngle * Mathf.PI / 180f; ;
+        float data = R * Mathf.Cos(rand);
+        if(CAngle*cards.Count<thetaDeg*2)
+        {
+            Angle=CAngle;
+            CardAngle=-CAngle*cards.Count/2;
+        }
+        for (int i = 0; i < count; i++)
+        {
+            RectTransform cardRect = cards[i].GetComponent<RectTransform>();
+            rand = CardAngle * Mathf.PI / 180f;
+            float X = R * Mathf.Sin(rand);
+            float Y = R * Mathf.Cos(rand);
+            cardRect.DOMove(new Vector2(transform.position.x+X, Y - data),1);
+           // = new Vector2(X, Y - data);
+            cardRect.DORotate(new Vector3(0,0,-CardAngle), 1f);
+            CardAngle += Angle;
+        }
+    }
+
+    #endregion
+    //使用对象池进行创建卡牌
+    #region 洗牌/发牌/回收所有卡牌
+    private void OnRecycleAllCard()
+    {
+        GetChildrenCard();
+        foreach (var i in cards)
+        {
+            GameObject obj = i.gameObject;
+            int ID = i.ID;
+            OnRecycleCard(obj, ID);
+        }
+    }
+    //使用洗牌算法
+    private void Shuffle(List<int> DrawPile)
+    {
+        int Len = DrawPile.Count - 1;
+        if (Len < DrawCount)//当卡牌小于发牌数量
+        {
+            DrawPile.AddRange(DiscardPile);
+            Len = DrawPile.Count - 1;
+            DiscardPile.Clear();//清空弃牌组
+            //将弃牌组的卡牌拿过来
+        }
+        int i;
+        for (int j = Len; j > 0; j--)
+        {
+            i = Random.Range(0, j + 1);
+            int m = DrawPile[i];
+            DrawPile[i] = DrawPile[j];
+            DrawPile[j] = m;
+        }
+    }
+    public IEnumerator Deal()//发牌
+    {
+        for (int i = 0; i < DrawCount; i++)
+        {
+            yield return new WaitForSeconds(0.2f);
+            yield return StartCoroutine(Draw());
+        }
+    }
+    private IEnumerator Draw()//发牌
+    {
+        if (DrawPile.Count >= 1)
+        {
+            //限制一下手牌数量不能超过最大值
+
+            GameObject obj = CardPool.Get();
+            if (obj != null)
+            {
+                Card card = obj.GetComponent<Card>();
+                card.ID = DrawPile[0];//赋值ID
+                //设置卡牌图片
+                CardData date = card_SO.cardDates.FirstOrDefault(i => i.ID == card.ID);
+                //date.function.value=date.date;
+                if (date == null)
+                {
+                    CardPool.Release(obj);
+                    yield break;
+                }
+                card.Description = date.Description;
+                card.player = player;
+                card.SetImage(date.sprite);
+                card.energy = date.energy;
+                UpdateHandLayout();//更新卡牌位置
+                                   //修改card的数据用于初始化
+                DrawPile.RemoveAt(0);
+            }
+        }
+        else
+        {
+            Shuffle(DrawPile);
+        }
+        yield return null;
+    }
+    #endregion
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Card\Card_SO.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+[CreateAssetMenu(fileName="Card_SO",menuName="InvenTory/Card_SO")]
+public class Card_SO : ScriptableObject
+{
+    public List<CardData> cardDates;
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Enemy\Enemy.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+public class Enemy : MonoBehaviour// 当一个敌人基类
+{
+    private EnemyDate enemyDate;//敌人数据
+    //
+    private GameObject Player;//玩家
+    public bool isPlay = false;
+    private Animator animator;
+    private Image image;
+    private Health health;
+    private int NextID=-1;
+    //private bool StartIntent=false;
+    void Awake()
+    {
+        health = GetComponent<Health>();
+        image = GetComponent<Image>();
+        animator = GetComponent<Animator>();
+    }
+    public void SetEnemy(GameObject Player, EnemyDate enemy)//设置怪物
+    {
+        this.Player = Player;
+        isPlay=false;
+        enemyDate = enemy;
+        NextID = -1;//状态重置
+        animator.runtimeAnimatorController = enemy.animator;
+        image.sprite = enemy.sprite;
+        health.StartHealth(enemy.MaxHealth);
+        enemyDate.AttackLogic.EnemyLogic(Player, enemyDate,gameObject,false,NextID,out NextID);
+    }
+    public void Attack()
+    {
+        //播放攻击动画
+        StartCoroutine(IAttack());
+    }
+    IEnumerator IAttack()
+    {
+        animator.SetTrigger("攻击");
+        yield return null;
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        yield return new WaitForSeconds(stateInfo.length + 0.2f);
+        isPlay = true;
+        EventHandler.CallAudiosfx();
+        enemyDate.AttackLogic.EnemyLogic(Player, enemyDate,gameObject,true,NextID,out NextID);//开始攻击
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Enemy\EnemyAttack.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+[CreateAssetMenu(fileName = "EnemyAttack", menuName = "EnemyLogic/EnemyAttack")]
+public class EnemyAttack : EnemyLogicBase
+{
+    public override void EnemyLogic(GameObject Player, EnemyDate enemyDate, GameObject Enemy, bool StartIntent,int CurrID,out int NextID)
+    {
+        int ID = CurrID;
+        NextID = Random.Range(0, enemyDate.skills.Count);
+        if (StartIntent&& ID >= 0 && ID < enemyDate.skills.Count)
+        {
+            EventHandler.CallExecute(Enemy,Player, enemyDate.skills[ID].ID);
+            Debug.Log("敌人攻击");
+        }
+        //显示下一步意图
+        Enemy.GetComponent<EnemyIntent>().Intent(enemyDate.skills[NextID].sprite);
+        //EventHandler.CallEnemyIntent(enemyDate.skills[NextID].sprite);
+        Debug.Log("敌人意图");
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Enemy\EnemyAttack1.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+[CreateAssetMenu(fileName = "EnemyAttack1", menuName = "EnemyLogic/EnemyAttack1")]
+public class EnemyAttack1 : EnemyLogicBase
+{
+    public override void EnemyLogic(GameObject Player, EnemyDate enemyDate, GameObject Enemy, bool StartIntent, int CurrID, out int NextID)
+    {
+        int ID = CurrID;
+        if (CurrID == enemyDate.skills.Count - 1)
+        {
+            NextID = 0;
+        }
+        else
+        {
+            NextID=CurrID+1;
+        }
+        if (StartIntent&& ID >= 0 && ID < enemyDate.skills.Count)
+        {
+            EventHandler.CallExecute(Enemy,Player, enemyDate.skills[ID].ID);
+            Debug.Log("敌人攻击");
+        }
+        //显示下一步意图
+        Enemy.GetComponent<EnemyIntent>().Intent(enemyDate.skills[NextID].sprite);
+        //EventHandler.CallEnemyIntent(enemyDate.skills[NextID].sprite);
+        Debug.Log("敌人意图");
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Enemy\EnemyDate.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEditor;
+[System.Serializable]
+public class EnemyDate
+{
+    [Header("敌人名称")] public string name;//敌人名称
+     [Header("敌人名称")] public int ID;//敌人ID
+    [Header("敌人图片")] public Sprite sprite;
+    [Header("敌人血量")] public float MaxHealth;
+    //1.敌人动画
+    [Header("敌人动画")] public AnimatorOverrideController animator;
+    [Header("攻击逻辑")] public EnemyLogicBase AttackLogic;
+    [Header("敌人技能")] public List<Skill> skills;
+    [Header("是否是小怪")]public bool Minion;
+    [Header("是否是精英怪")]public bool Elite;
+    [Header("是否是Boos")]public bool Boos;
+}
+[System.Serializable]
+public class Skill
+{
+    //2.敌人技能
+    public int ID;//技能编号
+    //3.技能图标
+    public Sprite sprite;
+   //public string str;//技能描述
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Enemy\EnemyIntent.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class EnemyIntent : MonoBehaviour//意图系统
+{
+    public Image image;
+    public void Intent(Sprite sprite)
+    {
+        image.sprite=sprite;
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Enemy\EnemyLogicBase.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+public interface IEnemyLogic
+{
+    public void EnemyLogic();
+    public void EnemyLogic(GameObject Enemy);//攻击逻辑
+    public void EnemyLogic(GameObject Enemy,GameObject Player);
+    public void EnemyLogic(GameObject Enemy,EnemyDate enemyDate);
+    public void EnemyLogic(GameObject Player, EnemyDate enemyDate, GameObject Enemy, bool StartIntent,int CurrID, out int NextID);
+}
+public class EnemyLogicBase : ScriptableObject,IEnemyLogic
+{
+    public virtual void EnemyLogic(GameObject Enemy)
+    {
+    }
+    public virtual void EnemyLogic(GameObject Enemy, GameObject Player)
+    {
+    }
+
+    public virtual void EnemyLogic(GameObject Enemy, EnemyDate enemyDate)
+    {
+    }
+    public virtual void EnemyLogic()
+    {
+    }
+    public virtual void EnemyLogic(GameObject Player, EnemyDate enemyDate, GameObject Enemy, bool StartIntent,int CurrID,out int NextID)
+    {
+        NextID=0;
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Enemy\EnemyManager.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Pool;
+using System.Linq;
+public class EnemyManager : MonoBehaviour//敌人管理器
+{
+    public static EnemyManager instance;//单例模式
+    public Enemy_SO enemy_SO;
+    public GameObject Player;//玩家
+    public GameObject Prefabe;//敌人预制体
+    public bool PlayerTrun = false;
+    private List<Enemy> Enemies;//所有敌人
+    private IObjectPool<GameObject> EnemyPool;//对象池
+    public bool EnemyDeath = true;
+    void Awake()
+    {
+        if (instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        else if (instance == null)
+        {
+            instance = this;
+        }
+        Enemies = new List<Enemy>();
+        EnemyPool = new ObjectPool<GameObject>(createFunc: CreatePooledItem,
+            actionOnGet: OnTakeFromPool,
+            actionOnRelease: OnReturnedToPool,
+            actionOnDestroy: OnDestroyPoolObject);
+    }
+    void OnEnable()
+    {
+        EventHandler.EnemyAttack += EnemyAttack;
+        EventHandler.EnemyDeath += OnEnemyDeath;
+        EventHandler.EnemySpaw += OnEnemySpawn;
+    }
+    void OnDisable()
+    {
+        EventHandler.EnemyAttack -= EnemyAttack;
+        EventHandler.EnemyDeath -= OnEnemyDeath;
+        EventHandler.EnemySpaw -= OnEnemySpawn;
+    }
+
+    private void OnEnemyDeath(GameObject obj)
+    {
+        // EnemyDeath=false;
+        EnemyPool.Release(obj);
+    }
+    private void OnEnemySpawn(int EnemyID)//创建敌人
+    {
+        GameObject EnemyObj = EnemyPool.Get();
+        //给怪物数据
+        if (EnemyObj != null)
+        {
+            Enemy enemy = EnemyObj.GetComponent<Enemy>();
+            if (enemy != null)
+            {
+                EnemyDate date = enemy_SO.enemyDates.FirstOrDefault(i => i.ID == EnemyID);
+
+                if (date != null)
+                {
+                    enemy.SetEnemy(Player, date);
+                }
+            }
+        }
+    }
+    #region 对象池
+    //使用对象池回收已经死亡的敌人
+    private GameObject CreatePooledItem()//创建敌人
+    {
+        GameObject obj = Instantiate(Prefabe, transform);
+        return obj;
+    }
+    private void OnTakeFromPool(GameObject obj)//获取敌人
+    {
+        obj.SetActive(true);
+    }
+    private void OnReturnedToPool(GameObject obj)//回收敌人
+    {
+        obj.SetActive(false);
+        CheckWin();
+    }
+    private void OnDestroyPoolObject(GameObject obj)//清除多余敌人
+    {
+        Destroy(obj);
+    }
+    #endregion
+    #region 敌人攻击
+    //获取所有敌人
+    void GetChildrenEnemy()
+    {
+        Enemies.Clear();
+        foreach (Transform child in transform)
+        {
+            if (child.gameObject.activeSelf)
+            {
+                Enemy enemy = child.GetComponent<Enemy>();
+                Enemies.Add(enemy);
+            }
+        }
+    }
+    void CheckWin()
+    {
+        GetChildrenEnemy();
+        if (Enemies.Count == 0)//所有怪物死亡开启胜利选择
+        {
+            StartCoroutine(AllEnemyDeath());
+        }
+        EnemyDeath = true;
+    }
+    //等待0.2f
+    IEnumerator AllEnemyDeath()
+    {
+        yield return new WaitForSeconds(0.3f);
+        EventHandler.CallWin();
+        EventHandler.CallRecycleAllCard();//回收所有卡牌
+        Debug.Log("胜利");
+    }
+    //所有敌人攻击
+    void EnemyAttack()
+    {
+        StartCoroutine(AllEnemyAttack());
+    }
+    IEnumerator AllEnemyAttack()
+    {
+        Debug.Log("怪物控制器敌人攻击1");
+        yield return new WaitUntil(() => EnemyDeath);//怪物非死亡的情况下才能攻击
+        Debug.Log("怪物控制器敌人攻击2");
+        GetChildrenEnemy();
+        foreach (var enemy in Enemies)
+        {
+            yield return new WaitForSeconds(0.2f);
+            yield return StartCoroutine(Attack(enemy));
+            yield return new WaitUntil(() => enemy.isPlay);
+            enemy.isPlay = false;
+        }
+        PlayerTrun = true;
+    }
+    IEnumerator Attack(Enemy enemy)
+    {
+        enemy.Attack();
+        yield return null;
+    }
+    #endregion
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Enemy\Enemy_SO.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+[CreateAssetMenu(fileName="Enemy_SO",menuName="InvenTory/Enemy_SO")]
+public class Enemy_SO : ScriptableObject
+{
+    public List<EnemyDate> enemyDates;
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Enemy\Intent.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Intent : MonoBehaviour
+{
+    [Header("目标物体")] public RectTransform Target;
+    [Header("需要被改变位置的物体")] public RectTransform Intentimage;
+    [Header("是否在上面")] public bool isTop;
+    void Awake()
+    {
+        SetDistance();
+    }
+    public void SetDistance()
+    {
+        float height = (Target.rect.height + Intentimage.rect.height) / 2;
+        if (isTop)
+        {
+            Intentimage.position = Target.position;
+            Intentimage.position = new Vector3(Intentimage.position.x, Intentimage.position.y + height);
+        }
+        else
+        {
+            Intentimage.position = Target.position;
+            Intentimage.position = new Vector3(Intentimage.position.x, Intentimage.position.y - height*2);
+        }
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Function\Attack.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+[CreateAssetMenu(fileName = "Attack", menuName = "Function/Attack")]
+public class Attack : Function
+{
+    public override void Functions(GameObject Caster, GameObject Target)
+    {
+        Health health = Target.GetComponent<Health>();
+        health.SetCurrHealth(-base.value);
+        Target.GetComponent<VfxPlayer>().OnPlayerAnimator();
+        //显示伤害数值
+        EventHandler.CallDamageText(Target.GetComponent<Transform>(), (int)base.value);
+        health.SetHealth();
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Function\Function.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+[CreateAssetMenu(fileName="Function", menuName="Function/Function")]
+public class Function : ScriptableObject,IFunction
+{
+    public float value;
+    public virtual void Functions(GameObject player,GameObject enemy)
+    {
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Function\Heal.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+[CreateAssetMenu(fileName = "Heal", menuName = "Function/Heal")]
+public class Heal : Function//回血
+{
+    public override void Functions(GameObject Caster, GameObject Target)
+    {
+        Health health = Caster.GetComponent<Health>();
+        health.SetCurrHealth(base.value);
+        Caster.GetComponent<VfxPlayer>().OnPlayerAnimator();
+        EventHandler.CallDamageText(Caster.GetComponent<Transform>(), (int)base.value);
+        health.SetHealth();
+    }
+}
+
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Function\IFunction.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public interface IFunction
+{
+    void Functions(GameObject Caster,GameObject Target);
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Function\Lifesteal.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+[CreateAssetMenu(fileName = "Lifesteal", menuName = "Function/Lifesteal")]
+public class Lifesteal : Function
+{
+    public override void Functions(GameObject Caster, GameObject Target)
+    {
+        Health health = Target.GetComponent<Health>();
+        health.SetCurrHealth(-base.value);
+        Health Casterhealth = Caster.GetComponent<Health>();
+        Casterhealth.SetCurrHealth(base.value / 2);
+        Casterhealth.SetHealth();
+        EventHandler.CallDamageText(Caster.GetComponent<Transform>(), (int)base.value);
+        EventHandler.CallDamageText(Target.GetComponent<Transform>(), (int)base.value);
+        health.SetHealth();
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Level\LevelManager.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System.Linq;
+public class LevelManager : MonoBehaviour
+{
+    //关卡配置文件
+    //胜利后调出胜利面板
+    //继续游戏后进入下一关
+    public Enemy_SO enemy_SO;
+    public LevelUI levelUI;
+    //难度
+    private int Difficulty;//难度
+    private int Level = 0;//关卡
+    List<EnemyDate> Minions;
+    List<EnemyDate> Elites;
+    List<EnemyDate> Booses;
+    void Awake()
+    {
+        Minions = enemy_SO.enemyDates.Where(enemy => enemy.Minion == true).ToList();
+        Elites = enemy_SO.enemyDates.Where(enemy => enemy.Elite == true).ToList();
+        Booses = enemy_SO.enemyDates.Where(enemy => enemy.Boos == true).ToList();
+    }
+    void Start()
+    {
+        LevelSpawn();
+    }
+    void OnEnable()
+    {
+        EventHandler.NextLevel += LevelSpawn;
+    }
+    void OnDisable()
+    {
+        EventHandler.NextLevel -= LevelSpawn;
+    }
+    public void LevelSpawn()//关卡生成
+    {
+        levelUI.AddLevelUI(Level);
+        int i;
+        Level++;//关卡自增
+        EnemyDate enemyDate;
+        if (Level == 3)//精英怪
+        {
+            i = Random.Range(0, Elites.Count);
+            enemyDate = Elites[i];
+        }
+        else if (Level == 5)//BOOS
+        {
+            Difficulty += 1;//难度加1
+            i = Random.Range(0, Booses.Count);
+            enemyDate = Booses[i];
+            Level = 0;
+        }
+        else//小怪
+        {
+            i = Random.Range(0, Minions.Count);
+            enemyDate = Minions[i];
+        }
+        if (Level == 1)
+        {
+            levelUI.InitLevelUI();
+            levelUI.AddLevelUI(Level);
+            Debug.Log("通关");
+
+        }
+        EventHandler.CallEnemySpaw(enemyDate.ID);
+        EventHandler.CallDeal();
+        Energy.instance.InitEnergy();
+    }
+    IEnumerator AllEnemyDeath()
+    {
+        yield return new WaitForSeconds(0.3f);
+        EventHandler.CallWin();
+        EventHandler.CallRecycleAllCard();//回收所有卡牌
+        Debug.Log("胜利");
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Level\LevelUI.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+public class LevelUI : MonoBehaviour
+{
+    public List<Image> images;
+    public Sprite Cleared;//过关显示
+    public Sprite NotCleared;//没过关显示
+    public void AddLevelUI(int i)
+    {
+        if(i<images.Count&&i!=-1)
+        images[i].sprite=Cleared;
+    }
+    public void InitLevelUI()
+    {
+        foreach(Image i in images)
+        {
+            i.sprite=NotCleared;
+        }
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Result\CardResult.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+
+public class CardResult : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+{
+    public int ID;//卡牌ID
+    public string Description;//卡牌描述
+    private Image image;//卡牌图片
+    private TextUI textUI;//卡牌描述
+    private Intent intent;//卡牌描述显示的位置
+    void Awake()
+    {
+        intent = GetComponent<Intent>();
+        image = GetComponent<Image>();
+        textUI = GetComponent<TextUI>();
+    }
+    public void SetImage(Sprite sprite)
+    {
+        image.sprite = sprite;
+    }
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        intent.SetDistance();
+        textUI.OnShow(Description);
+        //使用计时器
+        //通知显示卡牌效果文字
+        //EventHandler.CallShow(Description);
+    }
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        textUI.OnHide();
+        //关闭卡牌效果文字
+        //EventHandler.CallHide();
+    }
+
+    public void OnPointerClick(PointerEventData eventData)//点击
+    {
+        //将数据传到玩家手牌里
+        textUI.OnHide();
+        EventHandler.CallCardID(ID);
+        EventHandler.CallCloseCardResult();
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Result\ResultPanel.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class ResultPanel : MonoBehaviour//开启结算面板
+{
+    public GameObject Wingame;
+    public GameObject Losegame;
+    public VictoryResult victoryResult;
+    void OnEnable()
+    {
+        EventHandler.Win += ShowWin;
+        EventHandler.Lose += ShowLose;
+        EventHandler.NextLevel+=CloseWin;
+    }
+    void OnDisable()
+    {
+        EventHandler.Win -= ShowWin;
+        EventHandler.Lose -= ShowLose;
+        EventHandler.NextLevel-=CloseWin;
+    }
+    public void ShowWin()
+    {
+        Wingame.SetActive(true);
+        victoryResult.SetCard();
+    }
+    public void ShowLose()
+    {
+        Losegame.SetActive(true);
+    }
+    public void CloseWin()
+    {
+        Wingame.SetActive(false);
+    }
+    public void CloseLose()
+    {
+        Losegame.SetActive(false);
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\Result\VictoryResult.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class VictoryResult : MonoBehaviour
+{
+    public Card_SO card_SO;
+    public CardResult card1;
+    public CardResult card2;
+    public CardResult card3;
+    void OnEnable()
+    {
+        EventHandler.CloseCardResult += CloseCard;
+    }
+    void OnDisable()
+    {
+        EventHandler.CloseCardResult -= CloseCard;
+    }
+    public void SetCard()
+    {
+        OpenCard();
+        CardData cardData = card_SO.cardDates[Random.Range(0, card_SO.cardDates.Count)];
+        card1.Description = cardData.Description;
+        card1.SetImage(cardData.sprite);
+        card1.ID = cardData.ID;
+
+        cardData = card_SO.cardDates[Random.Range(0, card_SO.cardDates.Count)];
+        card2.Description = cardData.Description;
+        card2.SetImage(cardData.sprite);
+        card2.ID = cardData.ID;
+
+        cardData = card_SO.cardDates[Random.Range(0, card_SO.cardDates.Count)];
+        card3.Description = cardData.Description;
+        card3.SetImage(cardData.sprite);
+        card3.ID = cardData.ID;
+    }
+    public void CloseCard()
+    {
+        card1.gameObject.SetActive(false);
+        card2.gameObject.SetActive(false);
+        card3.gameObject.SetActive(false);
+    }
+    public void OpenCard()
+    {
+        card1.gameObject.SetActive(true);
+        card2.gameObject.SetActive(true);
+        card3.gameObject.SetActive(true);
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\SceneSwitch\SceneSwitch.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class SceneSwitch : MonoBehaviour
+{
+    public string SceneName;
+    public void StartSceneSwitch()
+    {
+        EventHandler.CallScene(SceneName);
+    }
+}
+
+
+// ===== FILE: E:\UNity_moud\卡牌\Assets\Scripts\SceneSwitch\SceneSwitchSystem.cs =====
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+public class SceneSwitchSystem : MonoBehaviour
+{
+    void Awake()
+    {
+        DontDestroyOnLoad(gameObject);
+    }
+    void OnEnable()
+    {
+        EventHandler.Scene += SceneSwitch;
+    }
+    void OnDisable()
+    {
+        EventHandler.Scene -= SceneSwitch;
+    }
+    public void SceneSwitch(string name)
+    {
+        if (name != string.Empty)
+        {
+            SceneManager.LoadScene(name);
+        }
+    }
+}
+

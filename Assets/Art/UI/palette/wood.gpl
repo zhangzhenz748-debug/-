@@ -1,0 +1,40 @@
+GIMP Palette
+Name: Pixel UI Kit v1.1 - Oak Tavern
+Columns: 8
+#
+ 33  13  18	outline 0
+ 71  31  24	frame 0
+107  52  32	frame 1
+145  86  47	frame 2
+184 132  73	frame 3
+219 184 114	frame 4
+ 92  39  26	button 0
+128  65  36	button 1
+163 100  52	button 2
+199 147  84	button 3
+235 202 136	button 4
+ 51  26  23	surface 0
+ 82  53  42	surface 1
+133  55  21	accent 0
+199 115  32	accent 1
+250 191  55	accent 2
+255 245 153	accent 3
+189 161 125	text 0
+245 230 201	text 1
+ 97  29  49	shared red 0
+158  38  48	shared red 1
+219  82  61	shared red 2
+255 159 107	shared red 3
+ 29  40 112	shared blue 0
+ 50  93 178	shared blue 1
+ 80 162 235	shared blue 2
+168 232 255	shared blue 3
+ 26  87  68	shared green 0
+ 52 138  94	shared green 1
+ 85 194 114	shared green 2
+117 235 123	shared green 3
+ 77  45 133	shared violet 0
+188 113 245	shared violet 1
+ 48  49  61	shared slate 0
+ 90  93 107	shared slate 1
+141 145 158	shared slate 2
