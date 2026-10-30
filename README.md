@@ -16,43 +16,43 @@
 - ├── Energy.cs # 能量系统（单例，消耗/初始化/不足提示）
 - ├── EventHandler.cs # 全局静态事件总线
 - ├── Health.cs # 血量、血条、受伤闪烁、死亡处理
-├── TextUI.cs # 卡牌描述文本显示/隐藏
-├── TurnManager.cs # 回合控制器（玩家回合/敌人回合流转）
-├── VfxPlayer.cs # 技能特效播放（AnimatorOverrideController 切换）
-├── Audio/
-│ ├── AudioController.cs # 音频控制器（BGM/SFX，跨场景常驻）
-│ ├── AudioData.cs # 音量持久化数据（ScriptableObject）
-│ └── AudioUI.cs # 音量滑条 UI
-├── Card/
-│ ├── Card.cs # 单张卡牌：拖拽、悬停放大、打出
-│ ├── CardDate.cs # CardData 数据结构（图片/ID/数值/特效/功能）
-│ ├── CardManager.cs # 牌库/手牌/弃牌堆、对象池、扇形布局、发牌
-│ └── Card_SO.cs # 卡牌总表（ScriptableObject）
-├── Enemy/
-│ ├── Enemy.cs # 敌人基类（动画、攻击协程）
-│ ├── EnemyAttack.cs # 随机技能攻击逻辑
-│ ├── EnemyAttack1.cs # 顺序循环技能攻击逻辑
-│ ├── EnemyDate.cs # 敌人数据（血量/动画/技能/类型）
-│ ├── EnemyIntent.cs # 意图图标显示
-│ ├── EnemyLogicBase.cs # 攻击逻辑基类 + IEnemyLogic 接口
-│ ├── EnemyManager.cs # 敌人对象池、群体攻击、死亡回收、胜利检测
-│ └── Enemy_SO.cs # 敌人总表（ScriptableObject）
-├── Function/
-│ ├── Function.cs # 卡牌功能基类（ScriptableObject）
-│ ├── IFunction.cs # 功能接口
-│ ├── Attack.cs # 造成伤害
-│ ├── Heal.cs # 回复血量
-│ └── Lifesteal.cs # 吸血（伤害+回复一半）
-├── Level/
-│ ├── LevelManager.cs # 关卡生成（小怪/精英/Boss）、难度递增
-│ └── LevelUI.cs # 关卡进度 UI
-├── Result/
-│ ├── CardResult.cs # 奖励卡牌点击选择
-│ ├── ResultPanel.cs # 胜负结算面板
-│ └── VictoryResult.cs # 胜利后随机三选一卡牌
-└── SceneSwitch/
-├── SceneSwitch.cs # 场景切换触发
-└── SceneSwitchSystem.cs # 场景切换执行（跨场景常驻）
+- ├── TextUI.cs # 卡牌描述文本显示/隐藏
+- ├── TurnManager.cs # 回合控制器（玩家回合/敌人回合流转）
+- ├── VfxPlayer.cs # 技能特效播放（AnimatorOverrideController 切换）
+- ├── Audio/
+- │ ├── AudioController.cs # 音频控制器（BGM/SFX，跨场景常驻）
+- │ ├── AudioData.cs # 音量持久化数据（ScriptableObject）
+- │ └── AudioUI.cs # 音量滑条 UI
+- ├── Card/
+- │ ├── Card.cs # 单张卡牌：拖拽、悬停放大、打出
+- │ ├── CardDate.cs # CardData 数据结构（图片/ID/数值/特效/功能）
+- │ ├── CardManager.cs # 牌库/手牌/弃牌堆、对象池、扇形布局、发牌
+- │ └── Card_SO.cs # 卡牌总表（ScriptableObject）
+- ├── Enemy/
+- │ ├── Enemy.cs # 敌人基类（动画、攻击协程）
+- │ ├── EnemyAttack.cs # 随机技能攻击逻辑
+- │ ├── EnemyAttack1.cs # 顺序循环技能攻击逻辑
+- │ ├── EnemyDate.cs # 敌人数据（血量/动画/技能/类型）
+- │ ├── EnemyIntent.cs # 意图图标显示
+- │ ├── EnemyLogicBase.cs # 攻击逻辑基类 + IEnemyLogic 接口
+- │ ├── EnemyManager.cs # 敌人对象池、群体攻击、死亡回收、胜利检测
+- │ └── Enemy_SO.cs # 敌人总表（ScriptableObject）
+- ├── Function/
+- │ ├── Function.cs # 卡牌功能基类（ScriptableObject）
+- │ ├── IFunction.cs # 功能接口
+- │ ├── Attack.cs # 造成伤害
+- │ ├── Heal.cs # 回复血量
+- │ └── Lifesteal.cs # 吸血（伤害+回复一半）
+- ├── Level/
+- │ ├── LevelManager.cs # 关卡生成（小怪/精英/Boss）、难度递增
+- │ └── LevelUI.cs # 关卡进度 UI
+- ├── Result/
+- │ ├── CardResult.cs # 奖励卡牌点击选择
+- │ ├── ResultPanel.cs # 胜负结算面板
+- │ └── VictoryResult.cs # 胜利后随机三选一卡牌
+- └── SceneSwitch/
+- ├── SceneSwitch.cs # 场景切换触发
+- └── SceneSwitchSystem.cs # 场景切换执行（跨场景常驻）
 
 ## 核心架构
 
